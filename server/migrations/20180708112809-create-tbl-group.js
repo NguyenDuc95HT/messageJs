@@ -20,6 +20,10 @@ module.exports = {
             avatar: {
                 type: DataTypes.STRING,
             },
+            name: {
+                type: DataTypes.STRING,
+                allowNull: false,
+            },
             createdAt: {
                 type: DataTypes.DATE,
                 defaultValue: DataTypes.NOW,

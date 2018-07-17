@@ -23,6 +23,10 @@ module.exports = (sequelize, DataTypes) => {
             avatar: {
                 type: DataTypes.STRING,
             },
+            name : {
+                type: DataTypes.STRING,
+                allowNull: false,
+            },
             createdAt: {
                 type: DataTypes.DATE,
             },
@@ -45,7 +49,7 @@ module.exports = (sequelize, DataTypes) => {
         Group.belongsTo(models.User, {
             foreignKey: 'authorId',
             onDelete: 'CASCADE'
-        });
+        }); 
     };
     return Group;
 };

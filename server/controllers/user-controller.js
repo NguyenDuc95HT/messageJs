@@ -1,7 +1,33 @@
 'use strict';
 import {User} from '../models'
+import {Response, JWTHelper, EncryptHelper} from '../helper';
 export default class UserController {
-
+    login = async(req, res, next) => {
+        try {
+            const {username, password} = req.body;
+            if (username === undefined) {
+                return Response.returnError(res, new Error('username undefined'));
+            }
+            let user = await  User.find({
+                where: {
+                    username
+                }
+            });
+            const checkPass = await EncryptHelper.isExistText(password, user.password);
+            if (!checkPass) {
+                return Response.returnError(res, new Error('Password is invalid'));
+            }
+            const token = await JWTHelper.sign('privateKey',{
+                id: user.id,
+                username: user.username,
+            });
+            return Response.returnSuccess(res, {
+                token
+            });
+        } catch (e) {
+            return Response.returnError(res,e);
+        }
+    };
     getListUser = async (req, res, next) => {
         try {
             let users = await User.findAll(
@@ -9,15 +35,9 @@ export default class UserController {
                     order: ['createdAt', 'DESC'],
                 }
             );
-            return res.status(200).json({
-                success: true,
-                data: users,
-            });
+            return Response.returnSuccess(res, users);
         } catch (e) {
-            return res.status(400).json({
-                success: false,
-                error: e.message,
-            });
+            return Response.returnError(res, e);
         }
     };
     getOneUser = async (req, res, next) => {
@@ -37,21 +57,21 @@ export default class UserController {
     };
     createUser = async (req, res, next) => {
         try {
-            let {username, password, address} = req.body;
-            let newUser = await User.create({
+            const {username, password, address} = req.body;
+            if (!Array.isArray(address) || address.length === 0) {
+                return Response.returnError(res, new Error('error'));
+            }
+            const newUser = await User.create({
                 username,
-                password,
-                address,
+                password: await EncryptHelper.executeEncrypt(password),
+                address
             });
-            return res.status(200).json({
-                success: true,
-                data: newUser,
-            });
+            return Response.returnSuccess(res, newUser);
         } catch (e) {
             return res.status(400).json({
                 success: false,
-                error: e.message,
-            });
+                error: e.message
+            })
         }
     };
     updateUser = async(req, res, next) => {
@@ -118,16 +138,17 @@ export default class UserController {
     };
     changePassword = async (req, res, next) => {
         try {
-            let {id} = req.params;
+            let author = req.user;
+            console.log(author)
             let {oldPassword, newPassword} = req.body;
             let user = await User.find({
                 where: {
-                    id
+                    id: author.id
                 }
             });
-            let checkPassword = await encryptHelper.isExistText(oldPassword, user.password);
+            let checkPassword = await EncryptHelper.isExistText(oldPassword, user.password);
             if (checkPassword) {
-                let hash = await encryptHelper.executeEncrypt(newPassword);
+                let hash = await EncryptHelper.executeEncrypt(newPassword);
 
                 let updatedUser = await User.update(
                     {
@@ -135,16 +156,13 @@ export default class UserController {
                     },
                     {
                         where: {
-                            id,
+                            id: author.id,
                         },
                         returning: true,
                     }
                 );
                 if (updatedUser[0] === 0) {
-                    return res.status(400).json({
-                        success: false,
-                        error: 'cannot change password'
-                    });
+                    return Response.returnError(res, new Error('something wrong'));
                 }
                 return res.status(200).json({
                     success: true,

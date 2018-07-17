@@ -20,7 +20,7 @@ module.exports = {
                 type: DataTypes.UUID,
                 allowNull: false,
                 references: {
-                    key: 'Id',
+                    key: 'id',
                     model: 'Group'
                 }
             },

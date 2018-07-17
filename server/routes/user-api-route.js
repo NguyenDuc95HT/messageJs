@@ -1,19 +1,21 @@
 'use strict';
 
 import {userController} from '../controllers/index';
+import {Authentication} from '../middlewares';
 
 module.exports = (app) => {
 
     app.route('/users')
-        .get(userController.getListUser)
-        .post(userController.createUser);
-
+        .get([Authentication.isAuth], userController.getListUser)
+        .post([Authentication.isAuth], userController.createUser);
     app.route('/users/:id')
-        .get(userController.getOneUser)
-        .put(userController.updateUser)
-        .delete(userController.deleteUser);
+        .get([Authentication.isAuth], userController.getOneUser)
+        .put([Authentication.isAuth], userController.updateUser)
+        .delete([Authentication.isAuth], userController.deleteUser);
     app.route('/users/search/:username')
-        .get(userController.searchUser);
-    app.route('/users/:id/changePassword')
-        .post(userController.changePassword);
+        .get([Authentication.isAuth], userController.searchUser);
+    app.route('/users/changePassword')
+        .post([Authentication.isAuth],userController.changePassword);
+    app.route('/login')
+        .post( userController.login)
 };

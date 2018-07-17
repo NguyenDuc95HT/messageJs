@@ -15,9 +15,8 @@ module.exports = (sequelize, DataTypes) => {
                     args: true,
                     msg: 'USERNAME_ALREADY_USING'
                 },
-                //validation will be executed right before inserting data to db.
                 validate: {
-                    isAlphanumeric: {
+                    isEmail: {
                         msg: 'USERNAME_INVALID'
                     }
                 }
@@ -27,7 +26,7 @@ module.exports = (sequelize, DataTypes) => {
                 allowNull: false,
             },
             address: {
-                type: DataTypes.ARRAY(DataTypes.STRING),
+                type: DataTypes.ARRAY(DataTypes.STRING)
             },
             isActive: {
                 type: DataTypes.BOOLEAN,

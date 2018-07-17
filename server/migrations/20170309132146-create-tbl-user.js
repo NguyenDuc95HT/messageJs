@@ -26,7 +26,6 @@ module.exports = {
             },
             address: {
                 type: DataTypes.ARRAY(DataTypes.STRING),
-                defaultValue: true
             },
             isActive: {
                type: DataTypes.BOOLEAN,
