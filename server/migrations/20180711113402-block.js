@@ -17,7 +17,6 @@ module.exports = {
             },
             groupId: {
                 type: DataTypes.UUID,
-                allowNull: false,
                 references: {
                     key: 'id',
                     model: 'Group'
@@ -25,7 +24,6 @@ module.exports = {
             },
             userId: {
                 type: DataTypes.UUID,
-                allowNull: false,
                 references: {
                     key: 'id',
                     model: 'User'
@@ -39,7 +37,6 @@ module.exports = {
             updatedAt: {
                 type: DataTypes.DATE,
                 defaultValue: DataTypes.NOW,
-                allowNull: false
             },
             deletedAt: {
                 type: DataTypes.DATE

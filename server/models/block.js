@@ -1,5 +1,4 @@
 'use strict';
-
 module.exports = (sequelize, DataTypes) => {
     const Block = sequelize.define('Block',
         {
@@ -19,7 +18,6 @@ module.exports = (sequelize, DataTypes) => {
             },
             groupId: {
                 type: DataTypes.UUID,
-                allowNull: false,
                 references: {
                     model: 'Group',
                     key: 'id'
@@ -27,7 +25,6 @@ module.exports = (sequelize, DataTypes) => {
             },
             userId: {
                 type: DataTypes.UUID,
-                allowNull: false,
                 references: {
                     model: 'User',
                     key: 'id'
@@ -40,7 +37,6 @@ module.exports = (sequelize, DataTypes) => {
             updatedAt: {
                 type: DataTypes.DATE,
                 defaultValue: DataTypes.NOW,
-                allowNull: false
             },
             deletedAt: {
                 type: DataTypes.DATE

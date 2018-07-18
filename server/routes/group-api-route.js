@@ -12,7 +12,5 @@ module.exports = (app) => {
         .get([Authentication.isAuth], groupController.getOneGroup)
         .put([Authentication.isAuth], groupController.updateGroup)
         .delete([Authentication.isAuth], groupController.deleteGroup);
-    // app.route('/Group/search/:groupname')
-    //     .get([Authentication.isAuth], groupController.searchGroup);
  
 };

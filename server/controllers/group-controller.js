@@ -5,7 +5,7 @@ export default class UserController {
 
     getListGroup = async (req, res, next) => {
         try {
-            let groups = await Group.findAll(
+            let groups = await Group.find(
                 {
                     attributes: {
                         exclude: ['authorId']
@@ -44,7 +44,7 @@ export default class UserController {
     };
     createGroup= async (req, res, next) => {
         try {
-            let authorId = req.user.id;
+            const authorId = req.user.id;
             let {name, avatar , type } = req.body;
             let newGroup = await Group.create({
                 authorId,
@@ -60,7 +60,7 @@ export default class UserController {
     updateGroup = async (req, res, next) => {
         try {
             let id = req.params;
-            const AuthorId = req.user;
+            const authorId = req.user.id;
             let {name, type, avatar} = req.body;
             let updateGroup= await User.update(
                 {
@@ -70,7 +70,8 @@ export default class UserController {
                 },
                 {
                     where: {
-                        id
+                        id,
+                        authorId
                     },
                     returning: true,
                 }
@@ -88,10 +89,12 @@ export default class UserController {
     };
     deleteGroup = async (req, res, next) => {
         try {
+            const authorId = req.user.id;
             let {id} = req.params;
             await Group.describe({
                 where: {
-                    id
+                    id,
+                    authorId
                 }
             });
             return res.status(200).json({

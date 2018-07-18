@@ -1,10 +1,11 @@
 'use strict';
-import {Block} from '../models'
-export default class UserController {
+import {Block} from '../models';
+import {Response} from '../helper';
+export default class blockController {
 
     getListBlock = async (req, res, next) => {
         try {
-            const Block = await Block.findAll(
+            const blockList = await Block.findAll(
                 {
                     include: [
                         {
@@ -22,9 +23,9 @@ export default class UserController {
                     ]
                 }
             );
-            return response.returnSuccess(res, Block);
+            return Response.returnSuccess(res, blockList);
         } catch (e) {
-            return response.returnError(res, e);
+            return Response.returnError(res, e);
         }
     };
     getOneBlock =async(req, res, next) => {
@@ -51,27 +52,30 @@ export default class UserController {
                     ]
 
                 }
-            )
+            );
+            return Response.returnSuccess(res, block);
         } catch (e) {
-            return response.returnError(res, e);
+            return Response.returnError(res, e);
         }
     }
     createBlock = async (req, res, next) => {
         try {
-            const {authorId, userId, groupId} = req.body;
+            const authorId = req.user.id;
+            const {userId, groupId} = req.body;
             const newBlock = await Block.create({
                 authorId,
                 userId,
                 groupId
             });
-            return response.returnSuccess(res, newBlock);
+            return Response.returnSuccess(res, newBlock);
         } catch (e) {
-            return response.returnError(res, e);
+            return Response.returnError(res, e);
         }
     };
     updateBlock = async (req, res, next) => {
         try {
-            const {authorId, userId, groupId} = req.body;
+            const authorId = req.user.id;
+            const {userId, groupId} = req.body;
             const updateBlock = await Block.update(
                 {
                 authorId,
@@ -80,14 +84,30 @@ export default class UserController {
                 },
                 {
                     where: {
-                        id
+                        id,
+                        authorId,
                     },
                 }
 
             );
-            return response.returnSuccess(res, newBlock);
+            return Response.returnSuccess(res, updateBlock);
         } catch (e) {
-            return response.returnError(res, e);
+            return Response.returnError(res, e);
         }
     };
+    deleteBlock = async (req, res, next) => {
+        try {
+            const {id} = req.params;
+            const authorId = res.user.id;
+            const delBlock = await Block.describe({
+                where: {
+                    id,
+                    authorId,
+                }
+            })
+            return Response.returnSuccess(res, delBlock);
+        } catch (e) {
+            return Response.returnError(res, e);
+        }
+    }
 }

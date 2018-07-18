@@ -10,7 +10,6 @@ module.exports = (sequelize, DataTypes) => {
             },
             userId: {
                 type: DataTypes.UUID,
-                allowNull: false,
                 references: {
                     key: 'id',
                     model: 'User'
@@ -18,7 +17,6 @@ module.exports = (sequelize, DataTypes) => {
             },
             groupId: {
                 type: DataTypes.UUID,
-                allowNull: false,
                 references: {
                     key: 'Id',
                     model: 'Group'
@@ -32,7 +30,6 @@ module.exports = (sequelize, DataTypes) => {
             updatedAt: {
                 type: DataTypes.DATE,
                 defaultValue: DataTypes.NOW,
-                allowNull: false
             },
             deletedAt: {
                 type: DataTypes.DATE
