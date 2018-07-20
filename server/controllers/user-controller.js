@@ -42,7 +42,7 @@ export default class UserController {
     };
     getOneUser = async (req, res, next) => {
         try {
-            let  {id} = req.params;
+            const id = req.user.id;
             let user = await  User.findById(id);
             return res.status(200).json({
                 success: true,
@@ -176,6 +176,41 @@ export default class UserController {
             });
         }
     };
+    joinGroup = async (req, res, next) => {
+        try {
+            const {groupId} = req.body;
+            const userId = req.user.id;
+            const newMember = await MemberGroup.create({
+                userId,
+                groupId
+            });
+            return Response.returnSuccess(res, newMember);
+        } catch (e) {
+            return Response.returnError(res, e);
 
+        }
+    };
+    blockUserGroup = async (req, res, next) => {
+        try {
+            const {userId, groupId} = req.params;
+            const authorId = req.user.id;
+            const group = await Group.find({
+                where: {
+                    authorId,
+                    id: groupId
+                }
+            });
+            if (group !== null) {
+                const newBlock = await Block.create({
+                    authorId,
+                    userId,
+                    groupId
+                });
+                return Response.returnSuccess(res, newBlock);
+            }
+            return Response.returnError(res, new Error('user not author'))
+        } catch (e) {
+            return Response.returnError(res, e);
+        }
 
 }

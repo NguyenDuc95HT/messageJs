@@ -17,5 +17,10 @@ module.exports = (app) => {
     app.route('/users/changePassword')
         .post([Authentication.isAuth],userController.changePassword);
     app.route('/login')
-        .post( userController.login)
+        .post( userController.login);
+    app.route('/users/join-group')
+        .post([Authentication.isAuth], userController.joinGroup);
+    app.route('/users/:userId/block/:groupId')
+        .post([Authentication.isAuth], userController.blockUserGroup);
+
 };
