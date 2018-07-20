@@ -1,5 +1,5 @@
 'use strict';
-import {User} from '../models'
+import {User, Group, Op, MemberGroup, Message} from '../models'
 import {Response, JWTHelper, EncryptHelper} from '../helper';
 export default class UserController {
     login = async(req, res, next) => {
@@ -212,5 +212,5 @@ export default class UserController {
         } catch (e) {
             return Response.returnError(res, e);
         }
-
+    }
 }

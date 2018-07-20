@@ -1,7 +1,7 @@
 'use strict';
-import {Block} from '../models';
+import {Block, Op, User, Group, MemberGroup, Message} from '../models';
 import {Response} from '../helper';
-export default class blockController {
+export default class BlockController {
 
     getListBlock = async (req, res, next) => {
         try {
@@ -57,7 +57,7 @@ export default class blockController {
         } catch (e) {
             return Response.returnError(res, e);
         }
-    }
+    };
     createBlock = async (req, res, next) => {
         try {
             const authorId = req.user.id;
@@ -105,7 +105,7 @@ export default class blockController {
                     id,
                     authorId,
                 }
-            })
+            });
             return Response.returnSuccess(res, delBlock);
         } catch (e) {
             return Response.returnError(res, e);

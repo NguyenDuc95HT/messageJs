@@ -1,5 +1,5 @@
 'use strict';
-import {RoleVerify, Reponse} from '../helper'
+import {RoleVerify, Response} from '../helper'
 
 export default class Role {
     static isAdmin = async (req, res, next) => {
@@ -8,10 +8,10 @@ export default class Role {
             if (role === 'admin') {
                 return next();
             } else {
-                return Reponse.returnError(res, new Error('user not admin'));
+                return Response.returnError(res, new Error('user not admin'));
             }
         } catch (e) {
-            return Reponse.returnError(res, e);
+            return Response.returnError(res, e);
         }
     }
 }

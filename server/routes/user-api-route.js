@@ -1,13 +1,10 @@
 'use strict';
-
 import {userController} from '../controllers/index';
 import {Authentication, Role} from '../middlewares';
-
 module.exports = (app) => {
-
     app.route('/users')
         .get([Authentication.isAuth, Role.isAdmin], userController.getListUser)
-        .post([Authentication.isAuth], userController.createUser);
+        .post(userController.createUser);
     app.route('/users/:id')
         .get([Authentication.isAuth], userController.getOneUser)
         .put([Authentication.isAuth], userController.updateUser)
@@ -22,5 +19,4 @@ module.exports = (app) => {
         .post([Authentication.isAuth], userController.joinGroup);
     app.route('/users/:userId/block/:groupId')
         .post([Authentication.isAuth], userController.blockUserGroup);
-
 };

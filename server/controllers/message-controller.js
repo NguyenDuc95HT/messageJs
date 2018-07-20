@@ -1,5 +1,5 @@
 'use strict';
-import {Message, Op,Group , User, Block} from '../models';
+import {Message, Op, Group, User, Block, MemberGroup} from '../models';
 import {Response} from '../helper';
 export default class MessageController {
     getListMessages = async (req, res, next) => {
