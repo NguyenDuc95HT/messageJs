@@ -1,5 +1,4 @@
 'use strict';
-
 const {User} = require('../models');
 module.exports = {
     up: (queryInterface, Sequelize) => {
@@ -22,7 +21,6 @@ module.exports = {
                 }).catch(error => {
                 console.log(error);
                 return false;
-
             });
         } catch (e) {
             return false;
