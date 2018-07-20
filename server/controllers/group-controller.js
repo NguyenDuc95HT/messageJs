@@ -1,5 +1,5 @@
 'use strict';
-import {Group, Op} from '../models';
+import {Group, Op,User, MemberGroup, Message} from '../models';
 import {encryptHelper,Response} from '../helper';
 export default class UserController {
 

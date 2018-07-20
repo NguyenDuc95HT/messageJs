@@ -74,6 +74,7 @@ export default class blockController {
     };
     updateBlock = async (req, res, next) => {
         try {
+            const {id} = req.params;
             const authorId = req.user.id;
             const {userId, groupId} = req.body;
             const updateBlock = await Block.update(
