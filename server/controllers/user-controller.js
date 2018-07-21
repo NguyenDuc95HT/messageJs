@@ -1,6 +1,7 @@
 'use strict';
 import {User, Group, Op, MemberGroup, Message} from '../models'
 import {Response, JWTHelper, EncryptHelper} from '../helper';
+import {privateKey, publicKey} from '../config'
 export default class UserController {
     login = async(req, res, next) => {
         try {
@@ -17,7 +18,7 @@ export default class UserController {
             if (!checkPass) {
                 return Response.returnError(res, new Error('Password is invalid'));
             }
-            const token = await JWTHelper.sign('privateKey',{
+            const token = await JWTHelper.sign({
                 id: user.id,
                 username: user.username,
             });

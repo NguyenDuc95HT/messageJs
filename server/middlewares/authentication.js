@@ -1,5 +1,6 @@
 'use strict';
 import {Response, JWTHelper} from '../helper';
+import {privateKey, publicKey} from '../config';
 export default class Authentication {
     static isAuth = async (req, res, next) => {
         try {
@@ -13,13 +14,13 @@ export default class Authentication {
                 authorization = req.body.token; // token = Bearer
             }
             if (token !== null) {
-                req.user = await JWTHelper.verify('privateKey', token);
+                req.user = await JWTHelper.verify(token);
             } else if (authorization !== null) {
                 const tokens = authorization.split('Bearer ');
                 if (tokens.length !== 2) {
                     return Response.returnError(res, new Error('Token wrong format'));
                 }
-                req.user = await JWTHelper.verify('privateKey', tokens[1]);
+                req.user = await JWTHelper.verify(tokens[1]);
             } else {
                 return Response.returnError(res, new Error('Token not provided'));
             }
