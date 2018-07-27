@@ -15,10 +15,9 @@ export default class UserController {
                             model: User,
                             as: 'author'
                         }
-                    ]
-                    ,
+                    ],
                     attributes: {
-                        exclude: 'authorId'
+                        exclude: ['authorId']
                     }
                 }
             );
@@ -123,7 +122,7 @@ export default class UserController {
                 }
             });
             if (block){
-                for (block.userId in block) {
+                for (block.userId of block) {
                     if (block.userId === member.userId) {
                         return Response. returnError(res, new Error('blocked user'))
                     }

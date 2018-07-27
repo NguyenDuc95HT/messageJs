@@ -83,6 +83,7 @@ export default class MessageController {
                     userId: authorId
                 }
             });
+            console.log(group);
             if (group === null) {
                 return Response.returnError(res, new Error('group does not exist'));
             }
@@ -90,7 +91,7 @@ export default class MessageController {
                 return Response.returnError(res, new Error('user is not in the group'));
             }
             if (block !== null && group.type === 'private') {
-                for (block.authorId in block) {
+                for (block.authorId of block) {
                     if (block.authorId === authorId) {
                         return Response.returnError(res, new Error('Blocked users'))
                     }
@@ -132,7 +133,6 @@ export default class MessageController {
             return Response.returnError(res, new Error('update wrong'));
         }
     };
-
     deleteMessage = async (req, res, next) => {
         try {
             const {id} = req.params;
