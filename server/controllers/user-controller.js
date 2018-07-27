@@ -1,7 +1,6 @@
 'use strict';
 import {User, Group, Op, MemberGroup, Message} from '../models'
 import {Response, JWTHelper, EncryptHelper} from '../helper';
-import {privateKey, publicKey} from '../config'
 export default class UserController {
     login = async(req, res, next) => {
         try {
@@ -33,7 +32,9 @@ export default class UserController {
         try {
             let users = await User.findAll(
                 {
-                    order: ['createdAt', 'DESC'],
+                    order: [
+                        ['createdAt', 'DESC'],
+                    ]
                 }
             );
             return Response.returnSuccess(res, users);
@@ -212,6 +213,25 @@ export default class UserController {
             return Response.returnError(res, new Error('user not author'))
         } catch (e) {
             return Response.returnError(res, e);
+        }
+    }
+    getListActiveGroups = async (req, res, next) => {
+        try {
+            const authorId = req.user.id;
+            const memberGroup =  await MemberGroup.findAll({
+               where: {
+                   userId: authorId,
+               },
+                include: [
+                    {
+                        model: Group,
+                        as: 'group'
+                    }
+                ]
+            });
+            return Response.returnSuccess(res, memberGroup);
+        } catch (e) {
+            return response.returnError(res, e);
         }
     }
 }

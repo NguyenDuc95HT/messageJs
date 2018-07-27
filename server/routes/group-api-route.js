@@ -9,4 +9,9 @@ module.exports = (app) => {
         .get([Authentication.isAuth], groupController.getOneGroup)
         .put([Authentication.isAuth], groupController.updateGroup)
         .delete([Authentication.isAuth], groupController.deleteGroup);
+    app.route('/Group/:id/LeaveGroup')
+        .get([Authentication.isAuth], groupController.leaveGroup);
+    app.route('/Group/:id/member')
+        .get([Authentication.isAuth], groupController.getlistMemberGroup)
+
 };

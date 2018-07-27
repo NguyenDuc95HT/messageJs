@@ -7,18 +7,19 @@ export default class UserController {
         try {
             let groups = await Group.find(
                 {
-                    attributes: {
-                        exclude: ['authorId']
-                    },
                     order: [
                         ['createdAt', 'DESC']
                     ],
                     include: [
                         {
                             model: User,
-                            as: 'author',
-                        },
+                            as: 'author'
+                        }
                     ]
+                    ,
+                    attributes: {
+                        exclude: 'authorId'
+                    }
                 }
             );
             return Response.returnSuccess(res, groups);
@@ -35,7 +36,7 @@ export default class UserController {
                         model: User,
                         as: 'author',
                     }
-                ]
+                ],
             });
             Response.returnSuccess(res, Group);
         } catch (e) {
@@ -107,4 +108,45 @@ export default class UserController {
             });
         }
     };
+    getlistMemberGroup = async (req, res, next) => {
+        try {
+            const userId = req.user.id;
+            const {id} = req.params;
+            const block = await Block.find({
+                where: {
+                    authorId: userId,
+                }
+            });
+            const member = await MemberGroup.find({
+                where: {
+                    groupId: id,
+                }
+            });
+            if (block){
+                for (block.userId in block) {
+                    if (block.userId === member.userId) {
+                        return Response. returnError(res, new Error('blocked user'))
+                    }
+                }
+            }
+            return Response.returnSuccess(res,member)
+        } catch (e) {
+
+        }
+    };
+    leaveGroup = async (req, res, next) => {
+        try {
+            const userId = req.user.id;
+            let {id} = req.params;
+            await MemberGroup.describe({
+                where: {
+                    groupId: id,
+                    userId,
+                }
+            });
+            return Response.returnSuccess(res, 'has leave group')
+        } catch (e) {
+            return Response.returnError(res, e);
+        }
+    }
 };

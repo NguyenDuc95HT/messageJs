@@ -1,6 +1,5 @@
 'use strict';
 import {Response, JWTHelper} from '../helper';
-import {privateKey, publicKey} from '../config';
 export default class Authentication {
     static isAuth = async (req, res, next) => {
         try {

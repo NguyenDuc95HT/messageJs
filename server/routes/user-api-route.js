@@ -3,7 +3,7 @@ import {userController} from '../controllers/index';
 import {Authentication, Role} from '../middlewares';
 module.exports = (app) => {
     app.route('/users')
-        .get([Authentication.isAuth, Role.isAdmin], userController.getListUser)
+        .get([Authentication.isAuth], userController.getListUser)
         .post(userController.createUser);
     app.route('/users/:id')
         .get([Authentication.isAuth], userController.getOneUser)
@@ -19,4 +19,6 @@ module.exports = (app) => {
         .post([Authentication.isAuth], userController.joinGroup);
     app.route('/users/:userId/block/:groupId')
         .post([Authentication.isAuth], userController.blockUserGroup);
+    app.route('users/getListActiveGroups')
+        .get([Authentication.isAuth],userController.getListActiveGroups);
 };

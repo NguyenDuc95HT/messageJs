@@ -5,6 +5,9 @@ export default class MessageController {
     getListMessages = async (req, res, next) => {
         try {
             const messages = await Message.findAll({
+                order: [
+                    ['createdAt', 'DESC']
+                ],
                 include: [
                     {
                         model: User,
@@ -15,6 +18,12 @@ export default class MessageController {
                         as: 'group'
                     }
                 ],
+                attributes: {
+                    exclude: [
+                        'authorId',
+                        'groupId'
+                    ],
+                }
             });
             return Response.returnSuccess(res, messages);
         } catch (e) {
@@ -60,19 +69,41 @@ export default class MessageController {
             const block = await Block.find({
                 where: {
                     authorId,
-                    groupId
+                    groupId,
                 }
             });
-            if (block === null) {
-                const newMessage = await Message.create({
-                    authorId,
+            const group = await  Group.find({
+                where: {
                     groupId,
-                    body,
-                    type
-                });
-                return Response.returnSuccess(res, newMessage);
+                }
+            });
+            const member = await MemberGroup.find({
+                where:{
+                    groupId,
+                    userId: authorId
+                }
+            });
+            if (group === null) {
+                return Response.returnError(res, new Error('group does not exist'));
             }
-            return Response.returnError(res, new Error('User be blocked'))
+            if (group.authorId !== authorId && member === null) {
+                return Response.returnError(res, new Error('user is not in the group'));
+            }
+            if (block !== null && group.type === 'private') {
+                for (block.authorId in block) {
+                    if (block.authorId === authorId) {
+                        return Response.returnError(res, new Error('Blocked users'))
+                    }
+                }
+            }
+            const newMessage = await Message.create({
+                authorId,
+                groupId,
+                body,
+                type
+            });
+            return Response.returnSuccess(res, newMessage);
+
         } catch (e) {
             return Response.returnError(res, e);
         }
