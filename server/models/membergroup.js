@@ -39,7 +39,6 @@ module.exports = (sequelize, DataTypes) => {
             paranoid: true,
             freezeTableName: true
         }
-
     );
     MemberGroup.associate = (models) => {
         MemberGroup.belongsTo(models.Group, {

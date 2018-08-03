@@ -1,6 +1,7 @@
 'use strict';
 import {User, Group, Op, MemberGroup, Message} from '../models'
 import {Response, JWTHelper, EncryptHelper} from '../helper';
+import {userRepository} from '../repositories'
 export default class UserController {
     login = async(req, res, next) => {
         try {
@@ -30,13 +31,7 @@ export default class UserController {
     };
     getListUser = async (req, res, next) => {
         try {
-            let users = await User.findAll(
-                {
-                    order: [
-                        ['createdAt', 'DESC'],
-                    ]
-                }
-            );
+            const users = await userRepository.getAll();
             return Response.returnSuccess(res, users);
         } catch (e) {
             return Response.returnError(res, e);
@@ -44,17 +39,15 @@ export default class UserController {
     };
     getOneUser = async (req, res, next) => {
         try {
-            const id = req.user.id;
-            let user = await  User.findById(id);
-            return res.status(200).json({
-                success: true,
-                data: user
+            const {id} = req.params;
+            let user = await  userRepository.getOne({
+                where: {
+                    id,
+                }
             });
+            return Response.returnSuccess(res, user)
         } catch (e) {
-            return res.status(400).json({
-                success: true,
-                error: e.message
-            });
+            return Response.returnError(res, e)
         }
     };
     createUser = async (req, res, next) => {
@@ -80,45 +73,27 @@ export default class UserController {
         try {
             let {id} = req.params;
             let {username, address} = req.body;
-            let updateUser = await User.update(
-                {
-                username,
-                address,
-                },
-                {
-                    where: {
-                        id
-                    },
-                    returning: true,
+            let updateUser = await userRepository.update({username, address}, {
+                where: {
+                    id,
                 }
-            );
-            return res.status(200).json({
-                success:true,
-                data: updateUser
-            })
+            });
+            return Response.returnSuccess(res, updateUser);
         } catch (e) {
-            return res.status(400).json({
-                success: false,
-                error: e.message,
-            })
+            return Response.returnError(res, e)
         }
     };
     deleteUser = async(req, res, next) => {
       try {
           let {id} = req.params;
-          await User.describe({
+          await userRepository.delete({
               where: {
-                  id
+                  id,
               }
           });
-          return res.status(200).json({
-             success: true,
-          });
+          return Response.returnSuccess(res, true)
       }  catch (e) {
-          return res.status(400).json({
-              success: false,
-              error: e.message,
-          });
+          return Response.returnError(res, e);
       }
     };
     searchUser = async (req, res, next) => {
@@ -214,22 +189,18 @@ export default class UserController {
         } catch (e) {
             return Response.returnError(res, e);
         }
-    }
+    };
     getListActiveGroups = async (req, res, next) => {
         try {
-            const authorId = req.user.id;
-            const memberGroup =  await MemberGroup.findAll({
+            const loginId = req.user.id;
+            const groups =  await MemberGroup.findAll({
                where: {
-                   userId: authorId,
+                   userId: loginId,
                },
-                include: [
-                    {
-                        model: Group,
-                        as: 'group'
-                    }
-                ]
+                attributes: ['groupId']
             });
-            return Response.returnSuccess(res, memberGroup);
+            const  groupIds = groups.map(item => groups.groupId);
+            return Response.returnSuccess(res, groupIds);
         } catch (e) {
             return response.returnError(res, e);
         }

@@ -1,26 +1,32 @@
 'use strict';
 import {Group, Op, User, MemberGroup, Message, Block} from '../models';
 import {encryptHelper,Response} from '../helper';
+import {groupRepository} from '../repositories'
 export default class UserController {
 
     getListGroup = async (req, res, next) => {
         try {
-            let groups = await Group.find(
-                {
-                    order: [
-                        ['createdAt', 'DESC']
-                    ],
-                    include: [
-                        {
-                            model: User,
-                            as: 'author'
-                        }
-                    ],
-                    attributes: {
-                        exclude: ['authorId']
+            const memberGroups = await memberGroupRepository.getAll({
+                where: {
+                    userId: req.user.id
+                },
+                attributes: ['groupId']
+            });
+            const groupIds = memberGroups.map(item => item.groupId);
+            const groups = await groupRepository
+                .getAll(
+                    {
+                        where: {
+                            id: groupIds
+                        },
+                        attributes: {
+                            exclude: ['authorId']
+                        },
+                        order: [
+                            ['createdAt', 'DESC']
+                        ]
                     }
-                }
-            );
+                );
             return Response.returnSuccess(res, groups);
         } catch (e) {
             return Response.returnError(res, e);
@@ -43,18 +49,75 @@ export default class UserController {
         }
     };
     createGroup= async (req, res, next) => {
+        let newGroup = null;
         try {
-            const authorId = req.user.id;
-            let {name, avatar , type } = req.body;
-            let newGroup = await Group.create({
-                authorId,
+            const userLoginId = req.user.id;
+            const { name, type, memberIds, partnerId } = req.body;
+            let memberGroupIds = [];
+            switch (type) {
+                case 'private':
+                    if (partnerId === undefined) {
+                        return Response.returnError(res, new Error('partnerId is required field'));
+                    }
+                    const existingGroup = await Group.findOne({
+                        where: {
+                            [Op.or]: [
+                                {
+                                    authorId: userLoginId,
+                                    partnerId: partnerId
+                                },
+                                {
+                                    partnerId: userLoginId,
+                                    authorId: partnerId
+                                }
+                            ]
+                        }
+                    });
+                    if (existingGroup) {
+                        return Response.returnSuccess(res, existingGroup);
+                    }
+
+                    memberGroupIds = [userLoginId, partnerId];
+                    break;
+                case 'group':
+                    if (name === undefined) {
+                        return Response.returnError(res, new Error('name group is required field'));
+                    }
+                    if (memberIds === undefined || !Array.isArray(memberIds) || memberIds.length === 0) {
+                        return Response.returnError(res, new Error('member group is invalid'));
+                    }
+                    if (!memberIds.includes(userLoginId)) {
+                        memberIds[memberIds.length] = userLoginId;
+                    }
+                    memberGroupIds = memberIds;
+                    break;
+                default:
+                    return Response.returnError(res, new Error('Invalid type group'));
+            }
+            newGroup = await Group.create({
                 name,
-                avatar,
+                authorId: userLoginId,
                 type,
+                partnerId
             });
-            Response.returnSuccess(res, newGroup);
+            const memberGroups = memberGroupIds.map(item => {
+                return {
+                    userId: item,
+                    groupId: newGroup.id
+                }
+            });
+            await MemberGroup.bulkCreate(memberGroups); // Check if not create member group successfully
+            return Response.returnSuccess(res, newGroup);
         } catch (e) {
-            Response.returnError(res, e);
+            if (newGroup) {
+                Group.destroy({
+                    force: true,
+                    where: {
+                        id: newGroup.id
+                    }
+                });
+            }
+            return Response.returnError(res, e);
         }
     };
     updateGroup = async (req, res, next) => {
