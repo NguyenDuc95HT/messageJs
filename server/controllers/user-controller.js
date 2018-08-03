@@ -155,18 +155,41 @@ export default class UserController {
     };
     joinGroup = async (req, res, next) => {
         try {
-            const {groupId} = req.body;
-            const userId = req.user.id;
-            const newMember = await MemberGroup.create({
-                userId,
-                groupId
+            const userLoginId = req.user.id;
+            const groupId = req.params.id;
+            const invitedUserId = req.body.invitedUserId;
+            const existedMember = await memberGroupRepository.getOne({
+                where: {
+                    groupId,
+                    userId: invitedUserId
+                },
+                paranoid: false
             });
-            return Response.returnSuccess(res, newMember);
+            if (!existedMember) {
+                memberGroupRepository.create({
+                    groupId: id,
+                    userId: invitedUserId
+                });
+            } else {
+                if (existedMember.deletedAt) {
+                    memberGroupRepository.update(
+                        {
+                            deletedAt: null
+                        },
+                        {
+                            where: {
+                                id: existedMember.id
+                            },
+                            paranoid: false
+                        }
+                    )
+                }
+            }
+            return Response.returnSuccess(res, true);
         } catch (e) {
             return Response.returnError(res, e);
-
         }
-    };
+};
     blockUserGroup = async (req, res, next) => {
         try {
             const {userId, groupId} = req.params;
