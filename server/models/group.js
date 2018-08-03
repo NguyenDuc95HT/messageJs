@@ -27,6 +27,14 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.STRING,
                 allowNull: false,
             },
+            partnerId: {
+                type: DataTypes.UUID,
+                references: {
+                    model: 'User',
+                    key: 'id'
+                },
+                onDelete: 'CASCADE'
+            },
             createdAt: {
                 type: DataTypes.DATE,
             },
