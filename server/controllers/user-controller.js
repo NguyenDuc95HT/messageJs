@@ -1,7 +1,7 @@
 'use strict';
 import {User, Group, Op, MemberGroup, Message} from '../models'
 import {Response, JWTHelper, EncryptHelper} from '../helper';
-import {userRepository} from '../repositories'
+import {userRepository, memberGroupRepository,groupRepository} from '../repositories'
 export default class UserController {
     login = async(req, res, next) => {
         try {
@@ -155,37 +155,34 @@ export default class UserController {
     };
     joinGroup = async (req, res, next) => {
         try {
-            const userLoginId = req.user.id;
+            const loginUserId = req.user.id;
+            const {userId} = req.body;
             const groupId = req.params.id;
-            const invitedUserId = req.body.invitedUserId;
             const existedMember = await memberGroupRepository.getOne({
                 where: {
                     groupId,
-                    userId: invitedUserId
+                    userId: loginUserId,
                 },
-                paranoid: false
+                attributes: ['id']
             });
-            if (!existedMember) {
-                memberGroupRepository.create({
-                    groupId: id,
-                    userId: invitedUserId
-                });
-            } else {
-                if (existedMember.deletedAt) {
-                    memberGroupRepository.update(
-                        {
-                            deletedAt: null
-                        },
-                        {
-                            where: {
-                                id: existedMember.id
-                            },
-                            paranoid: false
-                        }
-                    )
-                }
+            if (existedMember === null) {
+                return Response.returnError(res, new Error('loginUserId is not a member'))
             }
-            return Response.returnSuccess(res, true);
+            const member = await memberGroupRepository.getOne({
+                where: {
+                    groupId,
+                    userId,
+                },
+                attributes: ['id']
+            });
+            if (member !== null) {
+                return Response.returnError(res, new Error('User is already a member'))
+            }
+            const newMember = await memberGroupRepository.create({
+                userId,
+                groupId,
+            });
+            return Response.returnSuccess(res, newMember);
         } catch (e) {
             return Response.returnError(res, e);
         }
@@ -215,17 +212,30 @@ export default class UserController {
     };
     getListActiveGroups = async (req, res, next) => {
         try {
-            const loginId = req.user.id;
-            const groups =  await MemberGroup.findAll({
-               where: {
-                   userId: loginId,
-               },
+            const memberGroups = await memberGroupRepository.getAll({
+                where: {
+                    userId: req.user.id
+                },
                 attributes: ['groupId']
             });
-            const  groupIds = groups.map(item => groups.groupId);
-            return Response.returnSuccess(res, groupIds);
+            const groupIds = memberGroups.map(item => item.groupId);
+            const groups = await groupRepository
+                .getAll(
+                    {
+                        where: {
+                            id: groupIds
+                        },
+                        attributes: {
+                            exclude: ['authorId']
+                        },
+                        order: [
+                            ['createdAt', 'DESC']
+                        ]
+                    }
+                );
+            return Response.returnSuccess(res, groups);
         } catch (e) {
-            return response.returnError(res, e);
+            return Response.returnError(res, e);
         }
-    }
+    };
 }

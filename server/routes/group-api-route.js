@@ -12,6 +12,6 @@ module.exports = (app) => {
     app.route('/Group/:id/LeaveGroup')
         .get([Authentication.isAuth], groupController.leaveGroup);
     app.route('/Group/:id/member')
-        .get([Authentication.isAuth], groupController.getlistMemberGroup)
+        .get([Authentication.isAuth], groupController.getListMemberGroup)
 
 };

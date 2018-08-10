@@ -1,7 +1,7 @@
 'use strict';
 import {Group, Op, User, MemberGroup, Message, Block} from '../models';
 import {encryptHelper,Response} from '../helper';
-import {groupRepository} from '../repositories'
+import {groupRepository,memberGroupRepository} from '../repositories'
 export default class UserController {
 
     getListGroup = async (req, res, next) => {
@@ -35,7 +35,7 @@ export default class UserController {
     getOneGroup = async (req, res, next) => {
         try {
             let {id} = req.params;
-            let Group = await  Group.find({
+            let Group = await Group.find({
                 include: [
                     {
                         model: User,
@@ -48,11 +48,11 @@ export default class UserController {
             Response.returnError(res, e)
         }
     };
-    createGroup= async (req, res, next) => {
+    createGroup = async (req, res, next) => {
         let newGroup = null;
         try {
             const userLoginId = req.user.id;
-            const { name, type, memberIds, partnerId } = req.body;
+            const {name, type, memberIds, partnerId} = req.body;
             let memberGroupIds = [];
             switch (type) {
                 case 'private':
@@ -76,7 +76,6 @@ export default class UserController {
                     if (existingGroup) {
                         return Response.returnSuccess(res, existingGroup);
                     }
-
                     memberGroupIds = [userLoginId, partnerId];
                     break;
                 case 'group':
@@ -106,7 +105,7 @@ export default class UserController {
                     groupId: newGroup.id
                 }
             });
-            await MemberGroup.bulkCreate(memberGroups); // Check if not create member group successfully
+            await MemberGroup.bulkCreate(memberGroups);
             return Response.returnSuccess(res, newGroup);
         } catch (e) {
             if (newGroup) {
@@ -125,7 +124,7 @@ export default class UserController {
             let id = req.params;
             const authorId = req.user.id;
             let {name, type, avatar} = req.body;
-            let updateGroup= await User.update(
+            let updateGroup = await User.update(
                 {
                     name,
                     type,
@@ -170,7 +169,7 @@ export default class UserController {
             });
         }
     };
-    getlistMemberGroup = async (req, res, next) => {
+    getListMemberGroup = async (req, res, next) => {
         try {
             const userId = req.user.id;
             const {id} = req.params;
@@ -184,31 +183,47 @@ export default class UserController {
                     groupId: id,
                 }
             });
-            if (block){
+            if (block) {
                 for (block.userId of block) {
                     if (block.userId === member.userId) {
-                        return Response. returnError(res, new Error('blocked user'))
+                        return Response.returnError(res, new Error('blocked user'))
                     }
                 }
             }
-            return Response.returnSuccess(res,member)
+            return Response.returnSuccess(res, member)
         } catch (e) {
 
         }
     };
     leaveGroup = async (req, res, next) => {
         try {
-            const userId = req.user.id;
-            let {id} = req.params;
-            await MemberGroup.describe({
+            const loginUserId = req.user.id;
+            const groupId = req.params.id;
+            const isAuthor = await groupRepository.getOne({
                 where: {
-                    groupId: id,
-                    userId,
+                    id: groupId,
+                    authorId: loginUserId
+                },
+                attributes: ['id']
+            });
+
+            if (isAuthor) {
+                await groupRepository.delete({
+                    where: {
+                        id: groupId
+                    }
+                });
+                return Response.returnSuccess(res, true);
+            }
+            await memberGroupRepository.delete({
+                where: {
+                    userId: loginUserId,
+                    groupId
                 }
             });
-            return Response.returnSuccess(res, 'has leave group')
+            return Response.returnSuccess(res, 'leaved Group');
         } catch (e) {
             return Response.returnError(res, e);
         }
-    }
-};
+    };
+}
